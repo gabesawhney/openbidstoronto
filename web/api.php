@@ -57,8 +57,15 @@ if (!empty($_REQUEST['cn'])) {
 	}
 
 	if (!empty($_REQUEST['q'])) {
-		$where = "parsedtext LIKE ?";
-		$params[] = "s";
+#		$where = "parsedtext LIKE ?";
+#		$params[] = "s";
+#		$params[] = "%".$_REQUEST['q']."%";
+		$where = "( parsedtext LIKE ? OR ShortDescription LIKE ? OR Description LIKE ? OR ShowBuyerNameList LIKE ? OR Division LIKE ? )";
+		$params[] = "sssss";
+		$params[] = "%".$_REQUEST['q']."%";
+		$params[] = "%".$_REQUEST['q']."%";
+		$params[] = "%".$_REQUEST['q']."%";
+		$params[] = "%".$_REQUEST['q']."%";
 		$params[] = "%".$_REQUEST['q']."%";
 	} else {
 		$where = "?";
@@ -99,7 +106,6 @@ if (!empty($_REQUEST['cn'])) {
 	#print_r($where);
 	#print_r($params);
 	#print_r("SELECT `ShortDescription`,`CallNumber`,`ShowDatePosted`,`ClosingDate`,`Division`,`Type`,`Commodity`,`CommodityType` FROM `fromxml` WHERE ".$where." ORDER BY `ClosingDate` DESC LIMIT ?,?");
-
 	$stmt = $mysqli->prepare("SELECT `ShortDescription`,`CallNumber`,`ShowDatePosted`,`ClosingDate`,`Division`,`Type`,`Commodity`,`CommodityType` FROM `fromxml` WHERE ".$where." ".$orderby." LIMIT ?,?");
 	$stmt->bind_param(...$params);
 	$stmt->execute();
