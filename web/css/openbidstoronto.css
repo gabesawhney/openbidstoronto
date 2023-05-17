@@ -30,6 +30,10 @@ border-top: 1px solid #eee;
     margin-top: 10%;
     border-top: 1px solid #eee;
 }
+.attachments-section li {
+	margin-left: 1rem;
+    margin-bottom: 0px;
+}
 .result {
     margin: 2px;
     border-radius: 10px;

@@ -31,6 +31,9 @@
 <body>
 
 <?php
+$urlbase = "https://torontobidsstorage.file.core.windows.net/torontobids/ariba_data/";
+
+
 $haverecord=0;
 $url = "http://pwd.ca/openbidstoronto/api.php?cn=".urldecode($_REQUEST['cn']);
 $json = file_get_contents($url);
@@ -55,7 +58,7 @@ if (empty($json->data)) {
     <div class="recorddisplay">
 <?php
 foreach($json->data as $key => $value) {
-	if ( ($key != "parsedtext") && ($key != "urls") && ($key != "lastupdated") && ($key != "uuid") ) {
+	if ( ($key != "parsedtext") && ($key != "urls") && ($key != "BuyerPhoneShow") && ($key != "BuyerEmailShow") && ($key != "BuyerLocationShow") && ($key != "lastupdated") && ($key != "uuid") && ($key != "attachments") ) {
 ?>
     <div class="row">
       <div class="three columns"><?=$key?></div>
@@ -64,13 +67,21 @@ foreach($json->data as $key => $value) {
 <?
 	} elseif ($key == "parsedtext") {
 		$parsedtext = $value;
+	} elseif ($key == "attachments") {
+?>
+    <div class="row">
+      <div class="twelve columns attachments-section"><strong>Attachments:</strong><br/><ul>
+<?php
+foreach($value as $item) {
+?>	<li><a href="<?=$urlbase?><?=$_REQUEST['cn']?>/<?=$item?>"><?=$item?></a><?
+}
+?>
+      </ul></div>
+	</div>
+<?	
 	}
 }
 ?>
-    <div class="row">
-      <div class="twelve columns"><strong>Attachments:</strong><br/>
-      LINKS GO HERE</div>
-	</div>
     <div class="row">
       <div class="twelve columns"><strong>Text from attachments:</strong><br/>
       <?=$parsedtext?></div>

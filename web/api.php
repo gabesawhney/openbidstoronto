@@ -24,15 +24,16 @@ ini_set ('display_errors', '1');
 error_reporting (E_ALL|E_STRICT);
 
 include 'includes/mysql-vars.php';
+
 $mysqli = new mysqli($mysqlhost, $mysqluser, $mysqlpassword, $mysqldb);
 
 if (!empty($_REQUEST['cn'])) {
 	#return a single record
-	$where = "CallNumber = ?";
+	$where = "CallNumber = ? AND ClosingDate < NOW()";
 	$params[] = "s";
 	$params[] = $_REQUEST['cn'];
 
-	$stmt = $mysqli->prepare("SELECT `CallNumber`, `Commodity`, `CommodityType`, `Type`, `ShortDescription`, `Description`, `ShowDatePosted`, `ClosingDate`, `SiteMeeting`, `ShowBuyerNameList`, `BuyerPhoneShow`, `BuyerEmailShow`, `Division`, `BuyerLocationShow`, `urls`, `parsedtext`, `lastupdated`, `uuid` FROM `fromxml` WHERE ".$where);
+	$stmt = $mysqli->prepare("SELECT `CallNumber`, `Commodity`, `CommodityType`, `Type`, `ShortDescription`, `Description`, `ShowDatePosted`, `ClosingDate`, `SiteMeeting`, `ShowBuyerNameList`, `BuyerPhoneShow`, `BuyerEmailShow`, `Division`, `BuyerLocationShow`, `urls`, `parsedtext`, `lastupdated`, `uuid` FROM `calls` WHERE ".$where);
 	$stmt->bind_param(...$params);
 	$stmt->execute();
 	$result = $stmt->get_result(); // get the mysqli result
@@ -42,6 +43,17 @@ if (!empty($_REQUEST['cn'])) {
 	$output = [
 		"data"=>$r
 	];
+
+	$stmt = $mysqli->prepare("SELECT `filename` FROM `attachments` WHERE CallNumber = ?");
+	$aparams[] = "s";
+	$aparams[] = $_REQUEST['cn'];
+	$stmt->bind_param(...$aparams);
+	$stmt->execute();
+	$result = $stmt->get_result(); // get the mysqli result
+
+	while ($ar = $result->fetch_assoc() ) {
+		$output['data']['attachments'][] = $ar['filename'];
+	}
 
 } else {
 	#return a list of records
@@ -60,7 +72,7 @@ if (!empty($_REQUEST['cn'])) {
 #		$where = "parsedtext LIKE ?";
 #		$params[] = "s";
 #		$params[] = "%".$_REQUEST['q']."%";
-		$where = "( parsedtext LIKE ? OR ShortDescription LIKE ? OR Description LIKE ? OR ShowBuyerNameList LIKE ? OR Division LIKE ? )";
+		$where = "( parsedtext LIKE ? OR ShortDescription LIKE ? OR Description LIKE ? OR ShowBuyerNameList LIKE ? OR Division LIKE ? ) AND ClosingDate < CURDATE()";
 		$params[] = "sssss";
 		$params[] = "%".$_REQUEST['q']."%";
 		$params[] = "%".$_REQUEST['q']."%";
@@ -68,7 +80,7 @@ if (!empty($_REQUEST['cn'])) {
 		$params[] = "%".$_REQUEST['q']."%";
 		$params[] = "%".$_REQUEST['q']."%";
 	} else {
-		$where = "?";
+		$where = "? AND ClosingDate < CURDATE()";
 		$params[] = "s";
 		$params[] = "1";
 	}
@@ -106,7 +118,7 @@ if (!empty($_REQUEST['cn'])) {
 	#print_r($where);
 	#print_r($params);
 	#print_r("SELECT `ShortDescription`,`CallNumber`,`ShowDatePosted`,`ClosingDate`,`Division`,`Type`,`Commodity`,`CommodityType` FROM `fromxml` WHERE ".$where." ORDER BY `ClosingDate` DESC LIMIT ?,?");
-	$stmt = $mysqli->prepare("SELECT `ShortDescription`,`CallNumber`,`ShowDatePosted`,`ClosingDate`,`Division`,`Type`,`Commodity`,`CommodityType` FROM `fromxml` WHERE ".$where." ".$orderby." LIMIT ?,?");
+	$stmt = $mysqli->prepare("SELECT `ShortDescription`,`CallNumber`,`ShowDatePosted`,`ClosingDate`,`Division`,`Type`,`Commodity`,`CommodityType` FROM `calls` WHERE ".$where." ".$orderby." LIMIT ?,?");
 	$stmt->bind_param(...$params);
 	$stmt->execute();
 	$result = $stmt->get_result(); // get the mysqli result
@@ -117,7 +129,7 @@ if (!empty($_REQUEST['cn'])) {
 	}
 	$totalrecords = $result->num_rows;
 
-	$stmt = $mysqli->prepare("SELECT `Commodity`,count(`Commodity`) as count FROM `fromxml` WHERE ".$where." GROUP BY `Commodity` ".$orderby." LIMIT ?,?");
+	$stmt = $mysqli->prepare("SELECT `Commodity`,count(`Commodity`) as count FROM `calls` WHERE ".$where." GROUP BY `Commodity` ".$orderby." LIMIT ?,?");
 	$stmt->bind_param(...$params);
 	#$stmt->bind_param("s", $wherevalue);
 	$stmt->execute();
@@ -127,7 +139,7 @@ if (!empty($_REQUEST['cn'])) {
 		$top['Commodity'][$r[0]] = $r[1];
 	}
 
-	$stmt = $mysqli->prepare("SELECT `CommodityType`,count(`CommodityType`) as count FROM `fromxml` WHERE ".$where." GROUP BY `CommodityType` ".$orderby." LIMIT ?,?");
+	$stmt = $mysqli->prepare("SELECT `CommodityType`,count(`CommodityType`) as count FROM `calls` WHERE ".$where." GROUP BY `CommodityType` ".$orderby." LIMIT ?,?");
 	$stmt->bind_param(...$params);
 	#$stmt->bind_param("s", $wherevalue);
 	$stmt->execute();
@@ -137,7 +149,7 @@ if (!empty($_REQUEST['cn'])) {
 		$top['CommodityType'][$r[0]] = $r[1];
 	}
 
-	$stmt = $mysqli->prepare("SELECT `Division`,count(`Division`) as count FROM `fromxml` WHERE ".$where." GROUP BY `Division` ".$orderby." LIMIT ?,?");
+	$stmt = $mysqli->prepare("SELECT `Division`,count(`Division`) as count FROM `calls` WHERE ".$where." GROUP BY `Division` ".$orderby." LIMIT ?,?");
 	$stmt->bind_param(...$params);
 	#$stmt->bind_param("s", $wherevalue);
 	$stmt->execute();
