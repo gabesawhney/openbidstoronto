@@ -2,7 +2,7 @@
 
 /*
 Usage:
-http://pwd.ca/tobids/api.php: 
+http://pwd.ca/openbidstoronto/api.php: 
 - cn: Return detail info for the specified record
 - If cn is not specified: Returns summary of all records
 	Optional:

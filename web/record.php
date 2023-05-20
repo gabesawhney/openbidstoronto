@@ -32,7 +32,7 @@
 
 <?php
 $urlbase = "https://torontobidsstorage.file.core.windows.net/torontobids/ariba_data/";
-
+$ariba_sas_token = "?sv=2022-11-02&ss=f&srt=sco&sp=rl&se=2123-05-18T04:49:53Z&st=2023-05-17T20:49:53Z&spr=https,http&sig=uWfbBiXayfnnSxN%2FpmRW%2FBOtVOyGcY%2F%2Fcz5lN8gjAP4%3D";
 
 $haverecord=0;
 $url = "http://pwd.ca/openbidstoronto/api.php?cn=".urldecode($_REQUEST['cn']);
@@ -73,7 +73,7 @@ foreach($json->data as $key => $value) {
       <div class="twelve columns attachments-section"><strong>Attachments:</strong><br/><ul>
 <?php
 foreach($value as $item) {
-?>	<li><a href="<?=$urlbase?><?=$_REQUEST['cn']?>/<?=$item?>"><?=$item?></a><?
+?>	<li><a href="<?=$urlbase?><?=$_REQUEST['cn']?>/<?=$item?><?=$ariba_sas_token?>"><?=$item?></a><?
 }
 ?>
       </ul></div>
